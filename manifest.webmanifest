@@ -1,0 +1,11 @@
+{
+  "name": "SUPER AI",
+  "short_name": "SUPER AI",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#090d18",
+  "theme_color": "#090d18",
+  "description": "دستیار هوش مصنوعی شخصی"
+}

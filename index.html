@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d18"><meta name="description" content="SUPER AI - دستیار هوش مصنوعی شخصی">
+<link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css">
+<title>SUPER AI</title>
+</head>
+<body>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><div class="brand-mark">✦</div><div><b>SUPER AI</b><small>دستیار هوشمند شخصی</small></div></div>
+  <button class="new-chat" id="newChat">＋ گفت‌وگوی جدید</button>
+  <div class="side-label">فضای کاری</div>
+  <button class="nav-item active" data-view="chat">◉ <span>گفت‌وگو با هوش مصنوعی</span></button>
+  <button class="nav-item" data-view="creator">✧ <span>استودیو تولید محتوا</span></button>
+  <button class="nav-item" data-view="files">▤ <span>ابزار فایل‌ها</span></button>
+  <button class="nav-item" data-view="memory">▧ <span>حافظه و یادداشت‌ها</span></button>
+  <button class="nav-item" data-view="settings">⚙ <span>تنظیمات اتصال</span></button>
+  <div class="sidebar-bottom"><span class="status-dot"></span><span id="connectionLabel">حالت محلی فعال</span></div>
+</aside>
+<main class="main">
+<header class="topbar">
+  <button class="icon-btn mobile-menu" id="menuBtn" aria-label="منو">☰</button>
+  <div><div class="eyebrow">فضای هوشمند شما</div><strong id="pageTitle">گفت‌وگو با هوش مصنوعی</strong></div>
+  <div class="top-actions"><span class="mode-pill" id="modePill">آفلاین / محلی</span><button class="icon-btn" id="exportBtn" title="خروجی گفتگو">⇩</button></div>
+</header>
+<section class="view active" id="view-chat">
+  <div class="welcome" id="welcome">
+    <div class="orb">✦</div><p class="eyebrow">به فضای شخصی خودت خوش آمدی</p>
+    <h1>سلام! من <span>SUPER AI</span> هستم.</h1>
+    <p class="muted">برای شروع، سوالت را بنویس یا یکی از کارهای زیر را انتخاب کن.</p>
+    <div class="suggestions">
+      <button class="suggestion" data-prompt="برای کانال یوتیوب من ۵ ایده ویدیوی کوتاه و جذاب پیشنهاد بده.">🎬 ایده ویدیوی کوتاه</button>
+      <button class="suggestion" data-prompt="این موضوع را مرحله‌به‌مرحله برایم توضیح بده: ">🧠 یادگیری یک موضوع</button>
+      <button class="suggestion" data-prompt="یک برنامه هفتگی برای رسیدن به هدفم طراحی کن.">📅 برنامه‌ریزی</button>
+      <button class="suggestion" data-prompt="یک ابزار ساده و کاربردی با HTML و JavaScript برایم بنویس.">💻 کمک برنامه‌نویسی</button>
+    </div>
+  </div>
+  <div class="messages" id="messages" aria-live="polite"></div>
+  <div class="composer-wrap">
+    <div class="composer">
+      <textarea id="prompt" rows="1" placeholder="پیامت را اینجا بنویس... (Enter برای ارسال)"></textarea>
+      <div class="composer-tools"><span class="hint">پاسخ آنلاین نیازمند تنظیم اتصال است</span><div><button class="icon-btn" id="voiceBtn" title="ورودی صوتی">🎙</button><button class="send-btn" id="sendBtn" aria-label="ارسال">➤</button></div></div>
+    </div><div class="fineprint">پاسخ‌های هوش مصنوعی را برای تصمیم‌های مهم بررسی کن.</div>
+  </div>
+</section>
+<section class="view" id="view-creator">
+  <div class="panel-head"><p class="eyebrow">CONTENT STUDIO</p><h1>استودیو تولید محتوا</h1><p class="muted">ایده، سناریو، عنوان و کپشن را آماده کن.</p></div>
+  <div class="card form-card"><label>موضوع محتوا</label><textarea id="contentTopic" placeholder="مثلاً ۵ حقیقت عجیب درباره فضا"></textarea>
+  <div class="two-cols"><div><label>پلتفرم</label><select id="contentPlatform"><option>YouTube Shorts</option><option>Instagram Reels</option><option>TikTok</option><option>Facebook</option></select></div><div><label>سبک</label><select id="contentStyle"><option>جذاب و پرانرژی</option><option>آموزشی و دقیق</option><option>داستانی و مرموز</option><option>طنز و سرگرمی</option></select></div></div>
+  <button class="primary" id="generateContent">ساخت سناریو و بسته محتوا ✦</button></div>
+  <div class="card result-card" id="contentResult"><div class="muted">خروجی تولید محتوا اینجا نمایش داده می‌شود.</div></div>
+</section>
+<section class="view" id="view-files">
+  <div class="panel-head"><p class="eyebrow">FILE WORKSPACE</p><h1>ابزار فایل‌ها</h1><p class="muted">فایل متنی را انتخاب کن تا متن آن را بخوانی یا برای تحلیل به دستیار بفرستی.</p></div>
+  <div class="card"><label class="file-drop">📄 انتخاب فایل متنی <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.html,.log"></label><p class="muted small">در نسخه اولیه: TXT، MD، CSV، JSON، HTML و LOG</p><textarea id="fileText" class="file-output" placeholder="محتوای فایل اینجا نمایش داده می‌شود..."></textarea><button class="primary" id="analyzeFile">تحلیل این متن با AI</button></div>
+</section>
+<section class="view" id="view-memory">
+  <div class="panel-head"><p class="eyebrow">LOCAL MEMORY</p><h1>حافظه و یادداشت‌ها</h1><p class="muted">یادداشت‌ها فقط در همین مرورگر ذخیره می‌شوند.</p></div>
+  <div class="card"><label>یادداشت جدید</label><textarea id="noteInput" placeholder="چیزی که می‌خواهی نگه داری..."></textarea><button class="primary" id="saveNote">ذخیره یادداشت</button></div><div id="notesList" class="notes-list"></div>
+</section>
+<section class="view" id="view-settings">
+  <div class="panel-head"><p class="eyebrow">AI CONNECTION</p><h1>تنظیمات اتصال</h1><p class="muted">برای پاسخ هوشمند آنلاین، یک سرویس سازگار با API استاندارد Chat Completions وارد کن.</p></div>
+  <div class="card form-card">
+    <label>موتور هوش مصنوعی</label>
+    <select id="providerType"><option value="ollama">مدل محلی با Ollama (بدون هزینه API)</option><option value="compatible">سرویس آنلاین سازگار با OpenAI API</option></select>
+    <p class="muted small" id="providerHelp">برای استفاده از مدل محلی، Ollama باید روی رایانه یا دستگاه سازگار نصب و در حال اجرا باشد.</p>
+    <label>نشانی سرویس</label><input id="apiBase" placeholder="http://localhost:11434">
+    <label>نام مدل</label><input id="modelName" placeholder="مثلاً llama3.2 یا qwen2.5:3b">
+    <div id="apiKeyWrap"><label>کلید API (برای سرویس آنلاین)</label><input id="apiKey" type="password" autocomplete="off" placeholder="کلید API"></div>
+    <div class="warning" id="securityWarning">Ollama روی رایانه رایگان است، اما به فضای دیسک و RAM کافی نیاز دارد. برای اتصال گوشی به Ollama روی رایانه، نشانی IP محلی رایانه را وارد کن و دسترسی شبکه/CORS را در Ollama تنظیم کن. هرگز Ollama را بدون محافظت مستقیماً روی اینترنت عمومی باز نکن.</div>
+    <div class="button-row"><button class="primary" id="saveSettings">ذخیره تنظیمات</button><button class="secondary" id="testConnection">آزمایش اتصال</button></div><p id="settingsStatus" class="muted small"></p>
+  </div>
+  <div class="card"><h3>مدل محلی و اجرای آفلاین</h3><p class="muted">پس از دانلود مدل در Ollama، اجرای گفت‌وگو روی همان رایانه می‌تواند بدون اینترنت انجام شود. اگر با گوشی وارد می‌شوی، مدل معمولاً روی رایانه اجرا می‌شود و گوشی از طریق Wi‑Fi به آن وصل می‌شود. خود گوشی A70 برای مدل‌های بزرگ مناسب نیست.</p><div class="small muted">نمونه مدل‌های سبک برای شروع: qwen2.5:3b یا llama3.2:3b (نیازمند بررسی سازگاری و فضای کافی).</div></div>
+</section>
+</main>
+</div>
+<script src="app.js"></script>
+</body></html>
