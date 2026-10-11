@@ -1,45 +1,67 @@
-const $=id=>document.getElementById(id);
-const STORE={settings:"superai.settings",notes:"superai.notes",history:"superai.history"};
-let history=JSON.parse(localStorage.getItem(STORE.history)||"[]");
-let settings=JSON.parse(localStorage.getItem(STORE.settings)||"{}");
-let activeView="chat";
-function saveHistory(){localStorage.setItem(STORE.history,JSON.stringify(history.slice(-80)))}
-function addMessage(role,content){const el=document.createElement("div");el.className="message "+role;const label=document.createElement("div");label.className="role";label.textContent=role==="user"?"شما":"SUPER AI";const body=document.createElement("div");body.textContent=content;el.append(label,body);$("messages").append(el);$("messages").scrollTop=$("messages").scrollHeight}
-function renderHistory(){ $("messages").innerHTML="";history.forEach(m=>addMessage(m.role,m.content));$("welcome").classList.toggle("hidden",history.length>0)}
-function provider(){return settings.providerType||"compatible"}
-function setConnection(){const ready=provider()==="ollama"?!!(settings.apiBase&&settings.modelName):!!(settings.apiBase&&settings.modelName&&settings.apiKey);$("connectionLabel").textContent=ready?(provider()==="ollama"?"موتور محلی پیکربندی شده":"سرویس آنلاین پیکربندی شده"):"اتصال تنظیم نشده";$("modePill").textContent=ready?(provider()==="ollama"?"مدل محلی / Ollama":"مدل آنلاین"):"حالت محلی / بدون اتصال"}
-function showView(name){activeView=name;document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$("view-"+name).classList.add("active");document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===name));const titles={chat:"گفت‌وگو با هوش مصنوعی",creator:"استودیو تولید محتوا",files:"ابزار فایل‌ها",memory:"حافظه و یادداشت‌ها",settings:"تنظیمات اتصال"};$("pageTitle").textContent=titles[name];$("sidebar").classList.remove("open")}
-async function askAI(messages){
- const kind=provider(),base=(settings.apiBase||"").replace(/\/+$/,""),model=settings.modelName;
- if(!base||!model||(kind==="compatible"&&!settings.apiKey)) return "موتور هوش مصنوعی هنوز تنظیم نشده است.\n\nبه بخش «تنظیمات اتصال» برو و Ollama محلی یا یک API سازگار را پیکربندی کن.\n\nیادداشت‌ها و تاریخچه محلی بدون اتصال هم در دسترس‌اند.";
- let response;
- if(kind==="ollama"){
-  response=await fetch(base+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model,messages,stream:false,options:{temperature:0.7}})});
-  if(!response.ok)throw new Error("Ollama: "+response.status+" "+(await response.text()).slice(0,220));
-  const data=await response.json();return data.message?.content||"مدل پاسخی برنگرداند.";
- }
- response=await fetch(base+"/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+settings.apiKey},body:JSON.stringify({model,messages,temperature:.7})});
- if(!response.ok) throw new Error("خطای سرویس: "+response.status+" "+(await response.text()).slice(0,250));
- const data=await response.json();return data.choices?.[0]?.message?.content||"پاسخی از سرویس دریافت نشد.";
+const $ = (id) => document.getElementById(id);
+const STORE = {settings:'superai_settings_v2', chats:'superai_chats_v2', notes:'superai_notes_v2'};
+let messages = JSON.parse(localStorage.getItem(STORE.chats) || '[]');
+let busy = false;
+
+function settings(){ return JSON.parse(localStorage.getItem(STORE.settings) || '{}'); }
+function saveSettings(){
+  const s={mode:$('providerType').value, endpoint:$('apiBase').value.trim(), model:$('modelName').value.trim()};
+  localStorage.setItem(STORE.settings,JSON.stringify(s));
+  $('settingsStatus').textContent='تنظیمات در همین مرورگر ذخیره شد.';
+  updateStatus();
 }
-async function send(text){text=text.trim();if(!text)return;$("welcome").classList.add("hidden");history.push({role:"user",content:text});addMessage("user",text);saveHistory();$("prompt").value="";$("sendBtn").disabled=true;const waiting=document.createElement("div");waiting.className="message assistant";waiting.textContent="در حال پردازش…";$("messages").append(waiting);try{const reply=await askAI(history);waiting.remove();history.push({role:"assistant",content:reply});addMessage("assistant",reply);saveHistory()}catch(e){waiting.remove();const msg="ارتباط با سرویس برقرار نشد: "+e.message+"\nتنظیمات API و اتصال اینترنت را بررسی کن.";addMessage("assistant",msg);history.push({role:"assistant",content:msg});saveHistory()}finally{$("sendBtn").disabled=false}}
-$("sendBtn").onclick=()=>send($("prompt").value);
-$("prompt").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send($("prompt").value)}});
-$("newChat").onclick=()=>{history=[];saveHistory();renderHistory();showView("chat")};
-document.querySelectorAll(".nav-item").forEach(b=>b.onclick=()=>showView(b.dataset.view));
-document.querySelectorAll(".suggestion").forEach(b=>b.onclick=()=>{$("prompt").value=b.dataset.prompt;$("prompt").focus()});
-$("menuBtn").onclick=()=>$("sidebar").classList.toggle("open");
-$("exportBtn").onclick=()=>{const blob=new Blob([history.map(m=>(m.role==="user"?"شما":"SUPER AI")+":\n"+m.content).join("\n\n")],{type:"text/plain;charset=utf-8"});download(blob,"super-ai-chat.txt")};
-function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href)}
-function syncProviderUI(){const local=$("providerType").value==="ollama";$("apiKeyWrap").classList.toggle("hidden",local);$("providerHelp").textContent=local?"اتصال به Ollama؛ بدون کلید API. مدل باید قبلاً دانلود شده باشد.":"اتصال به یک سرویس آنلاین با قالب OpenAI Chat Completions.";$("apiBase").placeholder=local?"http://localhost:11434":"https://api.example.com/v1";$("securityWarning").textContent=local?"برای گوشی: localhost یعنی خود گوشی، نه رایانه. اگر Ollama روی رایانه است، از IP محلی رایانه مانند http://192.168.1.10:11434 استفاده کن. Ollama باید برای شبکه محلی/CORS پیکربندی شود. آن را بدون احراز هویت روی اینترنت عمومی قرار نده.":"هشدار امنیتی: این نسخه آزمایشی کلید را در حافظه محلی مرورگر نگه می‌دارد و مستقیم به سرویس وصل می‌شود. برای استفاده عمومی، کلید باید فقط روی Backend امن نگهداری شود."}
-$("providerType").value=settings.providerType||"compatible";$("apiBase").value=settings.apiBase||"";$("modelName").value=settings.modelName||"";$("apiKey").value=settings.apiKey||"";syncProviderUI();$("providerType").onchange=syncProviderUI;setConnection();
-$("saveSettings").onclick=()=>{settings={providerType:$("providerType").value,apiBase:$("apiBase").value.trim(),modelName:$("modelName").value.trim(),apiKey:$("apiKey").value.trim()};localStorage.setItem(STORE.settings,JSON.stringify(settings));setConnection();$("settingsStatus").textContent="تنظیمات موتور ذخیره شد."};
-$("testConnection").onclick=async()=>{$("settingsStatus").textContent="در حال آزمایش اتصال…";const temp={providerType:$("providerType").value,apiBase:$("apiBase").value.trim(),modelName:$("modelName").value.trim(),apiKey:$("apiKey").value.trim()};const old=settings;settings=temp;try{const r=await askAI([{role:"user",content:"فقط بنویس: موتور SUPER AI آماده است."}]);$("settingsStatus").textContent="اتصال موفق؛ پاسخ مدل: "+r.slice(0,180)}catch(e){$("settingsStatus").textContent="اتصال ناموفق: "+e.message}finally{settings=old}};
-$("generateContent").onclick=async()=>{const topic=$("contentTopic").value.trim();if(!topic)return alert("موضوع محتوا را وارد کن.");const p=`برای موضوع «${topic}» و پلتفرم ${$("contentPlatform").value} با سبک ${$("contentStyle").value} یک بسته کامل بساز: هوک ۳ ثانیه اول، سناریوی ۳۰ تا ۴۵ ثانیه‌ای با زمان‌بندی، پیشنهاد تصویر و تدوین، عنوان جذاب، کپشن و هشتگ. خروجی فارسی و کاربردی باشد.`;$("contentResult").textContent="در حال ساخت…";try{$("contentResult").textContent=await askAI([{role:"user",content:p}])}catch(e){$("contentResult").textContent=e.message}};
-$("fileInput").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{$("fileText").value=await f.text()}catch{$("fileText").value="خواندن این فایل ممکن نیست."}};
-$("analyzeFile").onclick=()=>{const t=$("fileText").value.trim();if(!t)return alert("ابتدا یک فایل متنی انتخاب کن.");showView("chat");send("لطفاً متن زیر را خلاصه و تحلیل کن:\n\n"+t.slice(0,18000))};
-function renderNotes(){const notes=JSON.parse(localStorage.getItem(STORE.notes)||"[]");$("notesList").innerHTML="";notes.forEach((n,i)=>{const d=document.createElement("div");d.className="note";d.textContent=n;const b=document.createElement("button");b.className="secondary";b.textContent="حذف";b.onclick=()=>{notes.splice(i,1);localStorage.setItem(STORE.notes,JSON.stringify(notes));renderNotes()};d.append(document.createElement("br"),b);$("notesList").append(d)})}
-$("saveNote").onclick=()=>{const n=$("noteInput").value.trim();if(!n)return;const notes=JSON.parse(localStorage.getItem(STORE.notes)||"[]");notes.unshift(n);localStorage.setItem(STORE.notes,JSON.stringify(notes));$("noteInput").value="";renderNotes()};
-renderNotes();renderHistory();
-$("voiceBtn").onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert("تشخیص گفتار در این مرورگر پشتیبانی نمی‌شود.");return}const rec=new SR();rec.lang="fa-IR";rec.onresult=e=>$("prompt").value+=e.results[0][0].transcript;rec.start()};
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+function updateStatus(){
+  const s=settings(); const online=s.endpoint && s.mode==='online';
+  $('modePill').textContent=online?'آنلاین':'آفلاین / محلی';
+  $('connectionLabel').textContent=online?'درگاه آنلاین تنظیم شده':'حالت محلی فعال';
+}
+function addMessage(role,content){
+  messages.push({role,content,at:Date.now()});
+  localStorage.setItem(STORE.chats,JSON.stringify(messages.slice(-100)));
+  renderMessages();
+}
+function renderMessages(){
+  const box=$('messages'); box.innerHTML='';
+  for(const m of messages){const el=document.createElement('article');el.className='message '+(m.role==='user'?'user':'assistant');const who=document.createElement('b');who.textContent=m.role==='user'?'شما':'SUPER AI';const body=document.createElement('div');body.textContent=m.content;el.append(who,body);box.append(el);}
+  box.scrollTop=box.scrollHeight;
+  $('welcome').style.display=messages.length?'none':'block';
+}
+async function send(){
+  const text=$('prompt').value.trim(); if(!text||busy)return;
+  $('prompt').value=''; addMessage('user',text); busy=true; $('sendBtn').disabled=true;
+  const s=settings();
+  try{
+    if(s.mode!=='online'||!s.endpoint) throw new Error('NO_ONLINE_CONFIG');
+    const response=await fetch(s.endpoint.replace(/\/$/, '')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages.slice(-20).map(({role,content})=>({role,content})),model:s.model||'openrouter/free'})});
+    const data=await response.json(); if(!response.ok) throw new Error(data.error||('خطای سرور '+response.status));
+    const answer=data.choices?.[0]?.message?.content;
+    if(!answer) throw new Error('پاسخ معتبری از مدل دریافت نشد.');
+    addMessage('assistant',answer);
+  }catch(e){
+    const msg=e.message==='NO_ONLINE_CONFIG'?'موتور آنلاین هنوز تنظیم نشده است. وارد «تنظیمات اتصال» شو و نشانی Worker را وارد کن. تا آن زمان تاریخچه و یادداشت‌ها روی گوشی ذخیره می‌شوند، اما پاسخ هوشمند آفلاین هنوز فعال نیست.':e.message;
+    addMessage('assistant','اتصال برقرار نشد: '+msg);
+  }finally{busy=false;$('sendBtn').disabled=false;}
+}
+function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.nav-item').forEach(v=>v.classList.toggle('active',v.dataset.view===name));const labels={chat:'گفت‌وگو با هوش مصنوعی',creator:'استودیو تولید محتوا',files:'ابزار فایل‌ها',memory:'حافظه و یادداشت‌ها',settings:'تنظیمات اتصال'};$('pageTitle').textContent=labels[name]||'SUPER AI';$('sidebar').classList.remove('open');}
+function loadNotes(){const notes=JSON.parse(localStorage.getItem(STORE.notes)||'[]');const list=$('notesList');list.innerHTML='';notes.forEach((n,i)=>{const d=document.createElement('div');d.className='card note';d.textContent=n;const b=document.createElement('button');b.className='secondary';b.textContent='حذف';b.onclick=()=>{notes.splice(i,1);localStorage.setItem(STORE.notes,JSON.stringify(notes));loadNotes();};d.append(b);list.append(d);});}
+function init(){
+ const s=settings(); $('providerType').value=s.mode||'offline'; $('apiBase').value=s.endpoint||''; $('modelName').value=s.model||'openrouter/free';
+ $('providerHelp').textContent='برای اتصال آنلاین، نشانی Worker امن خودت را وارد کن. کلید API فقط در تنظیمات سرور نگهداری می‌شود؛ آن را اینجا وارد نکن.';
+ $('apiKeyWrap').style.display='none'; $('securityWarning').textContent='کلید API را هرگز در GitHub یا مرورگر ذخیره نکن. آن را به‌عنوان Secret در محیط Cloudflare Worker تنظیم کن.';
+ $('providerType').onchange=()=>{$('providerHelp').textContent=$('providerType').value==='online'?'نشانی Cloudflare Worker را وارد کن.':'حالت آفلاین فعلاً حافظه محلی را نگه می‌دارد؛ پاسخ‌گویی با مدل محلی اندروید در مرحله بعد اضافه می‌شود.';};
+ $('sendBtn').onclick=send; $('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+ $('saveSettings').onclick=saveSettings;
+ $('testConnection').onclick=async()=>{saveSettings();const s=settings();if(s.mode!=='online'||!s.endpoint){$('settingsStatus').textContent='ابتدا حالت آنلاین و نشانی Worker را وارد کن.';return;}try{const r=await fetch(s.endpoint.replace(/\/$/,'')+'/health');const d=await r.json();$('settingsStatus').textContent=r.ok?'اتصال برقرار است: '+(d.status||'OK'):'خطا در اتصال';}catch(e){$('settingsStatus').textContent='اتصال ناموفق: '+e.message;}};
+ $('newChat').onclick=()=>{messages=[];localStorage.setItem(STORE.chats,'[]');renderMessages();switchView('chat');};
+ document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+ document.querySelectorAll('.suggestion').forEach(b=>b.onclick=()=>{$('prompt').value=b.dataset.prompt;$('prompt').focus();});
+ $('menuBtn').onclick=()=>$('sidebar').classList.toggle('open');
+ $('saveNote').onclick=()=>{const v=$('noteInput').value.trim();if(!v)return;const n=JSON.parse(localStorage.getItem(STORE.notes)||'[]');n.unshift(v);localStorage.setItem(STORE.notes,JSON.stringify(n));$('noteInput').value='';loadNotes();};
+ $('generateContent').onclick=()=>{$('prompt').value='برای موضوع زیر یک بسته محتوای کوتاه شامل قلاب ۳ ثانیه‌ای، سناریو، عنوان و کپشن بساز: '+$('contentTopic').value+'\nپلتفرم: '+$('contentPlatform').value+'؛ سبک: '+$('contentStyle').value;switchView('chat');};
+ $('analyzeFile').onclick=()=>{$('prompt').value='این متن را تحلیل و خلاصه کن:\n'+$('fileText').value;switchView('chat');};
+ $('fileInput').onchange=async e=>{const f=e.target.files[0];if(f)$('fileText').value=await f.text();};
+ $('exportBtn').onclick=()=>{const blob=new Blob([messages.map(m=>(m.role==='user'?'شما':'SUPER AI')+': '+m.content).join('\n\n')],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='super-ai-chat.txt';a.click();URL.revokeObjectURL(a.href);};
+ $('voiceBtn').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('تشخیص گفتار در این مرورگر پشتیبانی نمی‌شود.');return;}const rec=new SR();rec.lang='fa-IR';rec.onresult=e=>$('prompt').value+=(e.results[0][0].transcript||'');rec.start();};
+ updateStatus();renderMessages();loadNotes();
+}
+init();

@@ -64,11 +64,11 @@
   <div class="panel-head"><p class="eyebrow">AI CONNECTION</p><h1>تنظیمات اتصال</h1><p class="muted">برای پاسخ هوشمند آنلاین، یک سرویس سازگار با API استاندارد Chat Completions وارد کن.</p></div>
   <div class="card form-card">
     <label>موتور هوش مصنوعی</label>
-    <select id="providerType"><option value="ollama">مدل محلی با Ollama (بدون هزینه API)</option><option value="compatible">سرویس آنلاین سازگار با OpenAI API</option></select>
+    <select id="providerType"><option value="offline">حالت آفلاین (حافظه محلی)</option><option value="online">درگاه آنلاین امن (Cloudflare Worker)</option></select>
     <p class="muted small" id="providerHelp">برای استفاده از مدل محلی، Ollama باید روی رایانه یا دستگاه سازگار نصب و در حال اجرا باشد.</p>
-    <label>نشانی سرویس</label><input id="apiBase" placeholder="http://localhost:11434">
-    <label>نام مدل</label><input id="modelName" placeholder="مثلاً llama3.2 یا qwen2.5:3b">
-    <div id="apiKeyWrap"><label>کلید API (برای سرویس آنلاین)</label><input id="apiKey" type="password" autocomplete="off" placeholder="کلید API"></div>
+    <label>نشانی سرویس</label><input id="apiBase" placeholder="https://YOUR-WORKER.workers.dev">
+    <label>نام مدل</label><input id="modelName" placeholder="openrouter/free">
+    
     <div class="warning" id="securityWarning">Ollama روی رایانه رایگان است، اما به فضای دیسک و RAM کافی نیاز دارد. برای اتصال گوشی به Ollama روی رایانه، نشانی IP محلی رایانه را وارد کن و دسترسی شبکه/CORS را در Ollama تنظیم کن. هرگز Ollama را بدون محافظت مستقیماً روی اینترنت عمومی باز نکن.</div>
     <div class="button-row"><button class="primary" id="saveSettings">ذخیره تنظیمات</button><button class="secondary" id="testConnection">آزمایش اتصال</button></div><p id="settingsStatus" class="muted small"></p>
   </div>
@@ -76,5 +76,5 @@
 </section>
 </main>
 </div>
-<script src="app.js"></script>
+<script src="app.js"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
 </body></html>
