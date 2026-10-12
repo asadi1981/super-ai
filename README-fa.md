@@ -17,7 +17,7 @@
 3. در Quick Edit کد فایل `index.js` در ریشه مخزن را کامل جایگزین کد پیش‌فرض کن و Deploy بزن.
 4. در Settings > Variables and Secrets یک Secret با نام `OPENROUTER_API_KEY` بساز و کلید API خودت را در آن قرار بده. این کلید را در GitHub، فایل‌ها یا چت منتشر نکن.
 5. در بخش Variables مقدار `SITE_ORIGIN` را `https://asadi1981.github.io` و `DEFAULT_MODEL` را `openrouter/free` قرار بده. پس از تغییر، Deploy مجدد.
-6. آدرس Worker معمولاً شبیه `https://super-ai-engine.YOUR-SUBDOMAIN.workers.dev` است.
+6. آدرس Worker شما `https://super-ai-engine.bita-bita1981-0001.workers.dev` است.
 
 ## ۳) دریافت کلید ارائه‌دهنده
 1. به https://openrouter.ai برو و حساب بساز.
