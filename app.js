@@ -32,9 +32,9 @@ async function send(){
   const s=settings();
   try{
     if(s.mode!=='online'||!s.endpoint) throw new Error('NO_ONLINE_CONFIG');
-    const response=await fetch(s.endpoint.replace(/\/$/, '')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages.slice(-20).map(({role,content})=>({role,content})),model:s.model||'openrouter/free'})});
+    const response=await fetch(s.endpoint.replace(/\/$/, ''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:messages.slice(0,-1).slice(-18).map(({role,content})=>({role,content})),model:s.model||'openrouter/free'})});
     const data=await response.json(); if(!response.ok) throw new Error(data.error||('خطای سرور '+response.status));
-    const answer=data.choices?.[0]?.message?.content;
+    const answer=data.answer||data.choices?.[0]?.message?.content;
     if(!answer) throw new Error('پاسخ معتبری از مدل دریافت نشد.');
     addMessage('assistant',answer);
   }catch(e){
@@ -51,7 +51,7 @@ function init(){
  $('providerType').onchange=()=>{$('providerHelp').textContent=$('providerType').value==='online'?'نشانی Cloudflare Worker را وارد کن.':'حالت آفلاین فعلاً حافظه محلی را نگه می‌دارد؛ پاسخ‌گویی با مدل محلی اندروید در مرحله بعد اضافه می‌شود.';};
  $('sendBtn').onclick=send; $('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
  $('saveSettings').onclick=saveSettings;
- $('testConnection').onclick=async()=>{saveSettings();const s=settings();if(s.mode!=='online'||!s.endpoint){$('settingsStatus').textContent='ابتدا حالت آنلاین و نشانی Worker را وارد کن.';return;}try{const r=await fetch(s.endpoint.replace(/\/$/,'')+'/health');const d=await r.json();$('settingsStatus').textContent=r.ok?'اتصال برقرار است: '+(d.status||'OK'):'خطا در اتصال';}catch(e){$('settingsStatus').textContent='اتصال ناموفق: '+e.message;}};
+ $('testConnection').onclick=async()=>{saveSettings();const s=settings();if(s.mode!=='online'||!s.endpoint){$('settingsStatus').textContent='ابتدا حالت آنلاین و نشانی Worker را وارد کن.';return;}try{const r=await fetch(s.endpoint.replace(/\/$/,'') ,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'فقط OK پاسخ بده',history:[]})});const d=await r.json();$('settingsStatus').textContent=r.ok&&d.success?'اتصال برقرار است.':'خطا در پاسخ موتور: '+(d.error||r.status);}catch(e){$('settingsStatus').textContent='اتصال ناموفق: '+e.message;}};
  $('newChat').onclick=()=>{messages=[];localStorage.setItem(STORE.chats,'[]');renderMessages();switchView('chat');};
  document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
  document.querySelectorAll('.suggestion').forEach(b=>b.onclick=()=>{$('prompt').value=b.dataset.prompt;$('prompt').focus();});
