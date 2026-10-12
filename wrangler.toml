@@ -1,4 +1,4 @@
-name = "super-ai-gateway"
+name = "super-ai-engine"
 main = "index.js"
 compatibility_date = "2026-10-01"
 

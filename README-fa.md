@@ -13,11 +13,11 @@
 
 ## ۲) ساخت درگاه امن Cloudflare Worker
 1. در گوشی به https://dash.cloudflare.com برو و یک حساب رایگان بساز/وارد شو.
-2. از Workers & Pages گزینه Create ثم Worker بساز و نام `super-ai-gateway` بده.
-3. در Quick Edit کد فایل `worker/index.js` را کامل جایگزین کد پیش‌فرض کن و Deploy بزن.
+2. از Workers & Pages گزینه Create ثم Worker بساز و نام `super-ai-engine` بده.
+3. در Quick Edit کد فایل `index.js` در ریشه مخزن را کامل جایگزین کد پیش‌فرض کن و Deploy بزن.
 4. در Settings > Variables and Secrets یک Secret با نام `OPENROUTER_API_KEY` بساز و کلید API خودت را در آن قرار بده. این کلید را در GitHub، فایل‌ها یا چت منتشر نکن.
 5. در بخش Variables مقدار `SITE_ORIGIN` را `https://asadi1981.github.io` و `DEFAULT_MODEL` را `openrouter/free` قرار بده. پس از تغییر، Deploy مجدد.
-6. آدرس Worker معمولاً شبیه `https://super-ai-gateway.YOUR-SUBDOMAIN.workers.dev` است.
+6. آدرس Worker شما `https://super-ai-engine.bita-bita1981-0001.workers.dev` است.
 
 ## ۳) دریافت کلید ارائه‌دهنده
 1. به https://openrouter.ai برو و حساب بساز.
@@ -29,7 +29,7 @@
 2. منو > تنظیمات اتصال.
 3. موتور را روی «درگاه آنلاین امن» قرار بده.
 4. نشانی سرویس را با آدرس Worker خودت جایگزین کن؛ فقط دامنه Worker را وارد کن، بدون `/api/chat`.
-5. نام مدل را `openrouter/free` بگذار.
+5. نام مدل را `openrouter/free` بگذار. نشانی Worker را `https://super-ai-engine.bita-bita1981-0001.workers.dev` وارد کن.
 6. ذخیره تنظیمات و سپس آزمایش اتصال را بزن.
 7. به صفحه گفتگو برگرد و پیام آزمایشی ارسال کن.
 
