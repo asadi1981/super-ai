@@ -47,7 +47,7 @@ function loadNotes(){const notes=JSON.parse(localStorage.getItem(STORE.notes)||'
 function init(){
  const s=settings(); $('providerType').value=s.mode||'online'; $('apiBase').value=s.endpoint||'https://super-ai-engine.bita-bita1981-0001.workers.dev'; $('modelName').value=s.model||'openrouter/free';
  $('providerHelp').textContent='برای اتصال آنلاین، نشانی Worker امن خودت را وارد کن. کلید API فقط در تنظیمات سرور نگهداری می‌شود؛ آن را اینجا وارد نکن.';
- $('apiKeyWrap').style.display='none'; $('securityWarning').textContent='کلید API را هرگز در GitHub یا مرورگر ذخیره نکن. آن را به‌عنوان Secret در محیط Cloudflare Worker تنظیم کن.';
+ $('securityWarning').textContent='کلید API را هرگز در GitHub یا مرورگر ذخیره نکن. آن را به‌عنوان Secret در محیط Cloudflare Worker تنظیم کن.';
  $('providerType').onchange=()=>{$('providerHelp').textContent=$('providerType').value==='online'?'نشانی Cloudflare Worker را وارد کن.':'حالت آفلاین فعلاً حافظه محلی را نگه می‌دارد؛ پاسخ‌گویی با مدل محلی اندروید در مرحله بعد اضافه می‌شود.';};
  $('sendBtn').onclick=send; $('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
  $('saveSettings').onclick=saveSettings;
