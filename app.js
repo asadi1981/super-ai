@@ -33,7 +33,7 @@ async function send(){
   try{
     if(s.mode!=='online'||!s.endpoint) throw new Error('NO_ONLINE_CONFIG');
     const base=s.endpoint.replace(/\/$/, '').replace(/\/api\/chat$/, '');
-    const response=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages.slice(-19).map(({role,content})=>({role,content})),model:s.model||'openrouter/free'})});
+    const response=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages.filter(m=>['user','assistant'].includes(m.role)&&typeof m.content==='string'&&m.content.trim()).slice(-19).map(m=>({role:m.role,content:m.content.trim()})),model:s.model||'openrouter/free'})});
     const data=await response.json(); if(!response.ok) throw new Error(data.error||('خطای سرور '+response.status));
     const answer=data.answer||data.choices?.[0]?.message?.content;
     if(!answer) throw new Error('پاسخ معتبری از مدل دریافت نشد.');
