@@ -33,10 +33,10 @@ async function send(){
   try{
     if(s.mode!=='online'||!s.endpoint) throw new Error('NO_ONLINE_CONFIG');
     const base=s.endpoint.replace(/\/$/, '').replace(/\/api\/chat$/, '');
-    const response=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages.filter(m=>['user','assistant'].includes(m.role)&&typeof m.content==='string'&&m.content.trim()).slice(-19).map(m=>({role:m.role,content:m.content.trim()})),model:s.model||'openrouter/free'})});
+    const response=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,messages:messages.filter(m=>['user','assistant'].includes(m.role)&&typeof m.content==='string'&&m.content.trim()).slice(-19).map(m=>({role:m.role,content:m.content.trim()})),model:s.model||'openrouter/free'})});
     const data=await response.json(); if(!response.ok) throw new Error(data.error||('خطای سرور '+response.status));
     const answer=data.answer||data.choices?.[0]?.message?.content;
-    if(!answer) throw new Error('پاسخ معتبری از مدل دریافت نشد.');
+    if(!answer) throw new Error(data.error||'پاسخ معتبری از مدل دریافت نشد.');
     addMessage('assistant',answer);
   }catch(e){
     const msg=e.message==='NO_ONLINE_CONFIG'?'موتور آنلاین هنوز تنظیم نشده است. وارد «تنظیمات اتصال» شو و نشانی Worker را وارد کن. تا آن زمان تاریخچه و یادداشت‌ها روی گوشی ذخیره می‌شوند، اما پاسخ هوشمند آفلاین هنوز فعال نیست.':e.message;
@@ -52,7 +52,7 @@ function init(){
  $('providerType').onchange=()=>{$('providerHelp').textContent=$('providerType').value==='online'?'نشانی Cloudflare Worker را وارد کن.':'حالت آفلاین فعلاً حافظه محلی را نگه می‌دارد؛ پاسخ‌گویی با مدل محلی اندروید در مرحله بعد اضافه می‌شود.';};
  $('sendBtn').onclick=send; $('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
  $('saveSettings').onclick=saveSettings;
- $('testConnection').onclick=async()=>{saveSettings();const s=settings();if(s.mode!=='online'||!s.endpoint){$('settingsStatus').textContent='ابتدا حالت آنلاین و نشانی Worker را وارد کن.';return;}try{const base=s.endpoint.replace(/\/$/,'').replace(/\/api\/chat$/,'');const r=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'فقط OK پاسخ بده'}],model:s.model||'openrouter/free'})});const d=await r.json();$('settingsStatus').textContent=r.ok&&d.choices?.[0]?.message?.content?'اتصال برقرار است. پاسخ موتور دریافت شد.':'خطا در پاسخ موتور: '+(d.error||r.status);}catch(e){$('settingsStatus').textContent='اتصال ناموفق: '+e.message;}};
+ $('testConnection').onclick=async()=>{saveSettings();const s=settings();if(s.mode!=='online'||!s.endpoint){$('settingsStatus').textContent='ابتدا حالت آنلاین و نشانی Worker را وارد کن.';return;}try{const base=s.endpoint.replace(/\/$/,'').replace(/\/api\/chat$/,'');const r=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'فقط OK پاسخ بده',messages:[{role:'user',content:'فقط OK پاسخ بده'}],model:s.model||'openrouter/free'})});const d=await r.json();$('settingsStatus').textContent=r.ok&&(d.success&&d.answer||d.choices?.[0]?.message?.content)?'اتصال برقرار است. پاسخ موتور دریافت شد.':'خطا در پاسخ موتور: '+(d.error||r.status);}catch(e){$('settingsStatus').textContent='اتصال ناموفق: '+e.message;}};
  $('newChat').onclick=()=>{messages=[];localStorage.setItem(STORE.chats,'[]');renderMessages();switchView('chat');};
  document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
  document.querySelectorAll('.suggestion').forEach(b=>b.onclick=()=>{$('prompt').value=b.dataset.prompt;$('prompt').focus();});
