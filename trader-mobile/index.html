@@ -26,42 +26,50 @@
 
     <section class="section-head">
       <div><p class="eyebrow">نمای کلی</p><h2>بازارهای تحت نظر</h2></div>
-      <span class="live-label">داده زنده: متصل نیست</span>
+      <span class="live-label" id="market-connection">در انتظار سرور داده</span>
     </section>
 
+    <p class="eyebrow" id="market-updated">هنوز داده‌ای دریافت نشده است</p>
     <section class="market-grid" aria-label="بازارهای تحت نظر">
       <article class="market-card">
         <div class="asset-icon dollar">$</div>
         <div class="asset-info"><h3>دلار آمریکا</h3><p>بازار آزاد ایران</p></div>
         <span class="status-dot waiting">●</span>
-        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+        <strong class="price-placeholder">نرخ بازار آزاد هنوز متصل نیست</strong>
       </article>
       <article class="market-card">
         <div class="asset-icon euro">€</div>
         <div class="asset-info"><h3>یورو</h3><p>بازار آزاد ایران</p></div>
         <span class="status-dot waiting">●</span>
-        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+        <strong class="price-placeholder">نرخ بازار آزاد هنوز متصل نیست</strong>
       </article>
       <article class="market-card">
         <div class="asset-icon tether">₮</div>
         <div class="asset-info"><h3>تتر</h3><p>USDT / تومان</p></div>
         <span class="status-dot waiting">●</span>
-        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+        <strong class="price-placeholder" data-price="usdt">در انتظار داده</strong><small class="eyebrow" data-time="usdt"></small>
       </article>
       <article class="market-card">
         <div class="asset-icon crypto">₿</div>
         <div class="asset-info"><h3>بیت‌کوین</h3><p>BTC / USDT</p></div>
         <span class="status-dot waiting">●</span>
-        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+        <strong class="price-placeholder" data-price="btc">در انتظار داده</strong><small class="eyebrow" data-time="btc"></small>
+      </article>
+      <article class="market-card">
+        <div class="asset-icon crypto">Ξ</div>
+        <div class="asset-info"><h3>اتریوم</h3><p>ETH / USD</p></div>
+        <span class="status-dot waiting">●</span>
+        <strong class="price-placeholder" data-price="eth">در انتظار داده</strong><small class="eyebrow" data-time="eth"></small>
       </article>
     </section>
 
     <section class="panel">
       <div class="section-head compact"><div><p class="eyebrow">موتور تصمیم‌گیری</p><h2>وضعیت تحلیل</h2></div><span class="lock">● محافظت فعال</span></div>
-      <div class="analysis-state"><span class="pulse"></span><div><strong>در انتظار اتصال منابع داده</strong><p>تا زمانی که داده معتبر دریافت نشود، هیچ سیگنال یا سفارشی ساخته نمی‌شود.</p></div></div>
+      <div class="analysis-state"><span class="pulse"></span><div><strong id="analysis-status">تا راه‌اندازی سرور داده، تحلیل متوقف است.</strong><p>تا زمانی که داده معتبر و تازه دریافت نشود، هیچ سیگنال یا سفارشی ساخته نمی‌شود.</p></div></div>
       <div class="rule-row"><span>اولویت ریسک</span><strong>کم / محافظه‌کارانه</strong></div>
       <div class="rule-row"><span>اجرای سفارش</span><strong>غیرفعال</strong></div>
       <div class="rule-row"><span>برداشت وجه</span><strong>همیشه غیرفعال</strong></div>
+    <p class="eyebrow" id="data-warning">قیمت‌های مرجع پس از راه‌اندازی سرور نمایش داده می‌شوند.</p>
     </section>
 
     <section class="panel">
