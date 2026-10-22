@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="SUPER TRADER AI - داشبورد آزمایشی تحلیل چندبازاری">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <title>SUPER TRADER AI</title>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">دستیار هوشمند بازار</p>
+      <h1>SUPER TRADER <span>AI</span></h1>
+    </div>
+    <span class="mode-pill"><i></i> حالت آزمایشی</span>
+  </header>
+
+  <main>
+    <section class="notice" aria-live="polite">
+      <strong>معاملات واقعی غیرفعال است</strong>
+      <p>این نسخه فقط نمونه رابط کاربری است. هنوز به بازار یا حساب صرافی متصل نیست.</p>
+    </section>
+
+    <section class="section-head">
+      <div><p class="eyebrow">نمای کلی</p><h2>بازارهای تحت نظر</h2></div>
+      <span class="live-label">داده زنده: متصل نیست</span>
+    </section>
+
+    <section class="market-grid" aria-label="بازارهای تحت نظر">
+      <article class="market-card">
+        <div class="asset-icon dollar">$</div>
+        <div class="asset-info"><h3>دلار آمریکا</h3><p>بازار آزاد ایران</p></div>
+        <span class="status-dot waiting">●</span>
+        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+      </article>
+      <article class="market-card">
+        <div class="asset-icon euro">€</div>
+        <div class="asset-info"><h3>یورو</h3><p>بازار آزاد ایران</p></div>
+        <span class="status-dot waiting">●</span>
+        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+      </article>
+      <article class="market-card">
+        <div class="asset-icon tether">₮</div>
+        <div class="asset-info"><h3>تتر</h3><p>USDT / تومان</p></div>
+        <span class="status-dot waiting">●</span>
+        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+      </article>
+      <article class="market-card">
+        <div class="asset-icon crypto">₿</div>
+        <div class="asset-info"><h3>بیت‌کوین</h3><p>BTC / USDT</p></div>
+        <span class="status-dot waiting">●</span>
+        <strong class="price-placeholder">داده قیمت متصل نیست</strong>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="section-head compact"><div><p class="eyebrow">موتور تصمیم‌گیری</p><h2>وضعیت تحلیل</h2></div><span class="lock">● محافظت فعال</span></div>
+      <div class="analysis-state"><span class="pulse"></span><div><strong>در انتظار اتصال منابع داده</strong><p>تا زمانی که داده معتبر دریافت نشود، هیچ سیگنال یا سفارشی ساخته نمی‌شود.</p></div></div>
+      <div class="rule-row"><span>اولویت ریسک</span><strong>کم / محافظه‌کارانه</strong></div>
+      <div class="rule-row"><span>اجرای سفارش</span><strong>غیرفعال</strong></div>
+      <div class="rule-row"><span>برداشت وجه</span><strong>همیشه غیرفعال</strong></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head compact"><div><p class="eyebrow">حساب آزمایشی</p><h2>معاملات شبیه‌سازی‌شده</h2></div></div>
+      <div class="empty-state"><span>◎</span><strong>هنوز معامله‌ای ثبت نشده</strong><p>پس از اتصال داده‌های بازار، سیگنال‌ها ابتدا در حالت آزمایشی ارزیابی می‌شوند.</p></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head compact"><div><p class="eyebrow">اتصال‌ها</p><h2>منابع مورد بررسی</h2></div></div>
+      <div class="connection-row"><span>CoinMarketCap</span><b class="tag">منبع اطلاعات</b></div>
+      <div class="connection-row"><span>کیف پول من</span><b class="tag pending">نیازمند بررسی API</b></div>
+      <div class="connection-row"><span>OKX</span><b class="tag pending">نیازمند بررسی صلاحیت حساب</b></div>
+      <div class="connection-row"><span>CoinEx</span><b class="tag blocked">فعلاً غیرفعال</b></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="ناوبری اصلی">
+    <a class="active" href="#top">نمای کلی</a>
+    <a href="#markets">بازارها</a>
+    <a href="#analysis">تحلیل</a>
+    <a href="#settings">تنظیمات</a>
+  </nav>
+  <footer>نسخه نمایشی ۰.۱ · بدون اتصال معاملاتی · بدون ثبت سفارش واقعی</footer>
+  <script src="./app.js"></script>
+</body>
+</html>
