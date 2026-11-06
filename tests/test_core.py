@@ -56,17 +56,19 @@ class CoreTests(unittest.TestCase):
     def test_reject_symlink_escape_when_supported(self):
         import os
         with tempfile.TemporaryDirectory() as root:
-            outside = Path(root).parent / (Path(root).name + "-outside")
+            workspace = Path(root) / "workspace"
+            outside = Path(root) / "outside"
+            workspace.mkdir()
             outside.mkdir()
             try:
-                (Path(root) / "link").symlink_to(str(outside), target_is_directory=True)
+                (workspace / "link").symlink_to(str(outside), target_is_directory=True)
             except (OSError, NotImplementedError):
                 self.skipTest("Symlink creation is not permitted on this platform.")
             try:
                 with self.assertRaises(UnsafePathError):
-                    resolve_inside(root, "link/escape.txt")
+                    resolve_inside(workspace, "link/escape.txt")
             finally:
-                (Path(root) / "link").unlink()
+                (workspace / "link").unlink()
                 outside.rmdir()
 
     def test_reject_backup_symlink_escape_when_supported(self):
