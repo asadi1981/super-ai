@@ -132,5 +132,42 @@ class CoreTests(unittest.TestCase):
                 manager.restore(item["snapshot"], "data.txt", item["sha256"])
             self.assertEqual((workspace / "data.txt").read_text(encoding="utf-8"), "keep")
 
+
+    def test_restore_writes_durable_manifest_and_can_recover_after_restart(self):
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            target = workspace / "data.txt"
+            target.write_text("before", encoding="utf-8")
+            manager = BackupManager(workspace, backups)
+            source = workspace / "source.txt"
+            source.write_text("replacement", encoding="utf-8")
+            item = manager.snapshot("source.txt", "replacement.snapshot")
+            manager.restore(item["snapshot"], "data.txt", item["sha256"])
+            manifest_id = manager.last_rollback["manifest"]
+            self.assertEqual(target.read_text(encoding="utf-8"), "replacement")
+            restarted = BackupManager(workspace, backups)
+            self.assertEqual(restarted.pending_recoveries(), [])
+            restarted.recover_rollback(manifest_id)
+            self.assertEqual(target.read_text(encoding="utf-8"), "before")
+            self.assertEqual(restarted.pending_recoveries(), [])
+
+    def test_prepared_manifest_is_detected_as_pending_recovery(self):
+        import json
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            manager = BackupManager(workspace, backups)
+            manifest = manager.manifest_root / "interrupted.json"
+            manifest.write_text(json.dumps({
+                "version": 1, "id": "interrupted", "state": "prepared",
+                "target": "data.txt", "rollback": None
+            }), encoding="utf-8")
+            self.assertEqual(manager.pending_recoveries(), [{
+                "manifest": "interrupted", "target": "data.txt", "has_rollback": False
+            }])
+
 if __name__ == "__main__":
     unittest.main()
