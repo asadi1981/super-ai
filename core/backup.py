@@ -1,6 +1,5 @@
 """Simple workspace snapshots and verified restore for small local projects."""
 import hashlib
-import json
 import shutil
 from pathlib import Path
 from .safe_files import resolve_inside
@@ -30,7 +29,8 @@ class BackupManager:
                 "sha256": self._sha256(target), "size": target.stat().st_size}
 
     def restore(self, snapshot_path, relative_path, expected_sha256):
-        snapshot = Path(snapshot_path).resolve()
+        # A restore source must be inside the managed backup directory.
+        snapshot = resolve_inside(self.backup_root, Path(snapshot_path).resolve().relative_to(self.backup_root))
         if not snapshot.is_file() or self._sha256(snapshot) != expected_sha256:
             raise ValueError("Snapshot is missing or checksum verification failed.")
         target = resolve_inside(self.workspace, relative_path)
