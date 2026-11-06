@@ -3,10 +3,13 @@ import os
 import tempfile
 from pathlib import Path
 
+
 class UnsafePathError(ValueError):
     pass
 
+
 def resolve_inside(root, relative_path):
+    """Resolve a path and reject traversal or symlink escapes from root."""
     root_path = Path(root).resolve()
     candidate = (root_path / relative_path).resolve()
     try:
@@ -17,6 +20,7 @@ def resolve_inside(root, relative_path):
         raise UnsafePathError("Path is outside the workspace.")
     return candidate
 
+
 def read_text(root, relative_path, max_bytes=2 * 1024 * 1024):
     path = resolve_inside(root, relative_path)
     if not path.is_file():
@@ -26,7 +30,9 @@ def read_text(root, relative_path, max_bytes=2 * 1024 * 1024):
     with path.open("r", encoding="utf-8-sig") as stream:
         return stream.read()
 
+
 def write_text_atomic(root, relative_path, content, max_bytes=2 * 1024 * 1024):
+    """Write UTF-8 text via a temporary file in the destination directory."""
     if not isinstance(content, str):
         raise TypeError("content must be text")
     data = content.encode("utf-8")
@@ -34,6 +40,8 @@ def write_text_atomic(root, relative_path, content, max_bytes=2 * 1024 * 1024):
         raise ValueError("Content exceeds configured size limit.")
     path = resolve_inside(root, relative_path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    # Re-resolve after directory creation to catch changed symlink components.
+    path = resolve_inside(root, relative_path)
     fd, temp_name = tempfile.mkstemp(prefix=".superai-", dir=str(path.parent))
     try:
         with os.fdopen(fd, "wb") as stream:
