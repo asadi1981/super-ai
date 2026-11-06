@@ -100,6 +100,25 @@ class CoreTests(unittest.TestCase):
             manager.restore("nested/data.snapshot", "data.txt", item["sha256"])
             self.assertEqual((workspace / "data.txt").read_text(encoding="utf-8"), "before")
 
+    def test_restore_creates_rollback_before_replacing_existing_target(self):
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            target = workspace / "data.txt"
+            target.write_text("current", encoding="utf-8")
+            manager = BackupManager(workspace, backups)
+            source = workspace / "source.txt"
+            source.write_text("restored", encoding="utf-8")
+            item = manager.snapshot("source.txt", "restore.snapshot")
+            manager.restore(item["snapshot"], "data.txt", item["sha256"])
+            self.assertEqual(target.read_text(encoding="utf-8"), "restored")
+            self.assertIsNotNone(manager.last_rollback)
+            rollback = Path(manager.last_rollback["snapshot"])
+            self.assertEqual(rollback.read_text(encoding="utf-8"), "current")
+            self.assertEqual(manager.last_rollback["sha256"],
+                             __import__("hashlib").sha256(b"current").hexdigest())
+
     def test_restore_rejects_modified_snapshot(self):
         with tempfile.TemporaryDirectory() as root:
             workspace = Path(root) / "work"
