@@ -3,6 +3,7 @@ import hashlib
 import os
 import shutil
 import tempfile
+import uuid
 from pathlib import Path
 from .safe_files import resolve_inside
 
@@ -12,6 +13,7 @@ class BackupManager:
         self.workspace = Path(workspace).resolve()
         self.backup_root = Path(backup_root).resolve()
         self.backup_root.mkdir(parents=True, exist_ok=True)
+        self.last_rollback = None
 
     @staticmethod
     def _sha256(path):
@@ -23,13 +25,16 @@ class BackupManager:
 
     @staticmethod
     def _copy_atomic(source, target):
+        """Copy bytes to a writable temporary file, fsync, then replace atomically."""
         target.parent.mkdir(parents=True, exist_ok=True)
         fd, temp_name = tempfile.mkstemp(prefix=".superai-backup-", dir=str(target.parent))
-        os.close(fd)
         try:
-            shutil.copy2(str(source), temp_name)
-            with open(temp_name, "rb") as stream:
-                os.fsync(stream.fileno())
+            with os.fdopen(fd, "wb") as destination:
+                with source.open("rb") as origin:
+                    shutil.copyfileobj(origin, destination)
+                destination.flush()
+                os.fsync(destination.fileno())
+            shutil.copystat(str(source), temp_name)
             os.replace(temp_name, str(target))
         except Exception:
             try:
@@ -66,8 +71,21 @@ class BackupManager:
         target = resolve_inside(self.workspace, relative_path)
         if snapshot == target:
             raise ValueError("Snapshot and restore target must be different.")
-        # Revalidate after creating parent directories before the atomic replace.
+        # Create a rollback copy before replacing an existing destination.
         target.parent.mkdir(parents=True, exist_ok=True)
         target = resolve_inside(self.workspace, relative_path)
+        self.last_rollback = None
+        if target.exists():
+            if not target.is_file():
+                raise ValueError("Restore target exists and is not a regular file.")
+            rollback_name = "restore-rollback/" + uuid.uuid4().hex + "-" + target.name
+            rollback = resolve_inside(self.backup_root, rollback_name)
+            self._copy_atomic(target, rollback)
+            self.last_rollback = {
+                "snapshot": str(rollback),
+                "sha256": self._sha256(rollback),
+                "size": rollback.stat().st_size,
+                "target": str(relative_path),
+            }
         self._copy_atomic(snapshot, target)
         return target
