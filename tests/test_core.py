@@ -27,6 +27,19 @@ class CoreTests(unittest.TestCase):
             policy.check(Operation("delete_file", "external_or_destructive"))
         self.assertTrue(policy.check(Operation("delete_file", "external_or_destructive"), confirmed=True))
 
+    def test_restore_rejects_snapshot_outside_backup_root(self):
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            outside = Path(root) / "outside.snapshot"
+            outside.write_text("untrusted", encoding="utf-8")
+            manager = BackupManager(workspace, backups)
+            import hashlib
+            digest = hashlib.sha256(b"untrusted").hexdigest()
+            with self.assertRaises(ValueError):
+                manager.restore(str(outside), "target.txt", digest)
+
     def test_snapshot_and_restore(self):
         with tempfile.TemporaryDirectory() as root:
             workspace = Path(root) / "work"
