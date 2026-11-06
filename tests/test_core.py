@@ -52,5 +52,64 @@ class CoreTests(unittest.TestCase):
             manager.restore(item["snapshot"], "a.txt", item["sha256"])
             self.assertEqual((workspace / "a.txt").read_text(encoding="utf-8"), "original")
 
+
+    def test_reject_symlink_escape_when_supported(self):
+        import os
+        with tempfile.TemporaryDirectory() as root:
+            outside = Path(root).parent / (Path(root).name + "-outside")
+            outside.mkdir()
+            try:
+                (Path(root) / "link").symlink_to(str(outside), target_is_directory=True)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symlink creation is not permitted on this platform.")
+            try:
+                with self.assertRaises(UnsafePathError):
+                    resolve_inside(root, "link/escape.txt")
+            finally:
+                (Path(root) / "link").unlink()
+                outside.rmdir()
+
+    def test_reject_backup_symlink_escape_when_supported(self):
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            backups.mkdir()
+            outside = Path(root) / "outside.txt"
+            outside.write_text("outside", encoding="utf-8")
+            manager = BackupManager(workspace, backups)
+            try:
+                (backups / "escape.snapshot").symlink_to(outside)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symlink creation is not permitted on this platform.")
+            with self.assertRaises(UnsafePathError):
+                manager.restore("escape.snapshot", "target.txt",
+                                __import__("hashlib").sha256(b"outside").hexdigest())
+
+    def test_restore_accepts_backup_relative_snapshot_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            (workspace / "data.txt").write_text("before", encoding="utf-8")
+            manager = BackupManager(workspace, backups)
+            item = manager.snapshot("data.txt", "nested/data.snapshot")
+            (workspace / "data.txt").write_text("after", encoding="utf-8")
+            manager.restore("nested/data.snapshot", "data.txt", item["sha256"])
+            self.assertEqual((workspace / "data.txt").read_text(encoding="utf-8"), "before")
+
+    def test_restore_rejects_modified_snapshot(self):
+        with tempfile.TemporaryDirectory() as root:
+            workspace = Path(root) / "work"
+            backups = Path(root) / "backups"
+            workspace.mkdir()
+            (workspace / "data.txt").write_text("keep", encoding="utf-8")
+            manager = BackupManager(workspace, backups)
+            item = manager.snapshot("data.txt", "data.snapshot")
+            Path(item["snapshot"]).write_text("tampered", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                manager.restore(item["snapshot"], "data.txt", item["sha256"])
+            self.assertEqual((workspace / "data.txt").read_text(encoding="utf-8"), "keep")
+
 if __name__ == "__main__":
     unittest.main()
